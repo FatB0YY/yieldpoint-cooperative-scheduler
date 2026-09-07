@@ -1,0 +1,32 @@
+{
+  "name": "cooperative-scheduler",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Cooperative multitasking in JS/TS from scratch: generator tasks, a pluggable round-robin scheduler, and a result you can await, iterate, or subscribe to.",
+  "engines": {
+    "node": ">=23.6.0"
+  },
+  "scripts": {
+    "demo:problem": "node demo-problem.ts",
+    "demo:cooperative": "node demo-cooperative.ts",
+    "demo:parallel": "node demo-parallel.ts",
+    "demo:cancel": "node demo-cancel.ts",
+    "demo:error": "node demo-error.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "cooperative-multitasking",
+    "scheduler",
+    "generators",
+    "event-loop",
+    "async-iterator",
+    "concurrency",
+    "typescript"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.20.1",
+    "typescript": "^5.8.0"
+  }
+}

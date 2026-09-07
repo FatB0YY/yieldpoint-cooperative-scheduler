@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2024",
+    "lib": ["ES2024", "DOM"],
+
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+
+    "types": ["node"],
+
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true
+  },
+  "include": [
+    "*.ts",
+    "demo/demo-cancel.ts",
+    "demo/demo-cooperative.ts",
+    "demo/demo-error.ts",
+    "demo/demo-parallel.ts",
+    "demo/demo-problem.ts"
+  ]
+}
