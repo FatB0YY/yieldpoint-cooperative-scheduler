@@ -75,8 +75,8 @@ function* work(t: TaskHelper, n: number) {
     data.push(i);
 
     if (t.shouldPause()) {
-      yield data; // suspend here
-      data = []; // resume here
+      yield data;   // suspend here
+      data = [];    // resume here
     }
   }
 
@@ -88,10 +88,10 @@ function* work(t: TaskHelper, n: number) {
 
 Control reaches the event loop only because the runner schedules the next `.next()` as a macrotask. So the responsibilities split cleanly:
 
-| Who           | Decides                                          |
-| ------------- | ------------------------------------------------ |
-| The generator | Where it _can_ be interrupted                    |
-| The scheduler | Where it _will_ be interrupted, and for how long |
+| Who | Decides |
+|---|---|
+| The generator | Where it *can* be interrupted |
+| The scheduler | Where it *will* be interrupted, and for how long |
 
 That split is the whole library.
 
@@ -188,17 +188,17 @@ for await (const chunk of exec(n).catch(console.error)) { ... }
 
 Flat layout, no directories. Read them in this order.
 
-| File                                           | Lines | What it is                                   |
-| ---------------------------------------------- | ----- | -------------------------------------------- |
-| [`event-emitter.ts`](./event-emitter.ts)       | ~130  | Component 1 of 3. Events and async iteration |
-| [`scheduler.ts`](./scheduler.ts)               | ~180  | Component 2 of 3. The round-robin work loop  |
-| [`task.ts`](./task.ts)                         | ~170  | Component 3 of 3. Ties it all together       |
-| [`index.ts`](./index.ts)                       | 3     | Barrel re-export. Executes nothing           |
-| [`demo-problem.ts`](./demo-problem.ts)         | ~40   | The problem, with no library involved        |
-| [`demo-cooperative.ts`](./demo-cooperative.ts) | ~60   | The fix, and all three result interfaces     |
-| [`demo-parallel.ts`](./demo-parallel.ts)       | ~55   | Two tasks sharing one budget                 |
-| [`demo-cancel.ts`](./demo-cancel.ts)           | ~55   | `scheduler.clear()` and generator cleanup    |
-| [`demo-error.ts`](./demo-error.ts)             | ~50   | A throwing generator, both error paths       |
+| File | Lines | What it is |
+|---|---|---|
+| [`event-emitter.ts`](./event-emitter.ts) | ~130 | Component 1 of 3. Events and async iteration |
+| [`scheduler.ts`](./scheduler.ts) | ~180 | Component 2 of 3. The round-robin work loop |
+| [`task.ts`](./task.ts) | ~170 | Component 3 of 3. Ties it all together |
+| [`index.ts`](./index.ts) | 3 | Barrel re-export. Executes nothing |
+| [`demo-problem.ts`](./demo-problem.ts) | ~40 | The problem, with no library involved |
+| [`demo-cooperative.ts`](./demo-cooperative.ts) | ~60 | The fix, and all three result interfaces |
+| [`demo-parallel.ts`](./demo-parallel.ts) | ~55 | Two tasks sharing one budget |
+| [`demo-cancel.ts`](./demo-cancel.ts) | ~55 | `scheduler.clear()` and generator cleanup |
+| [`demo-error.ts`](./demo-error.ts) | ~50 | A throwing generator, both error paths |
 
 ### `event-emitter.ts`
 
@@ -230,18 +230,18 @@ Exports `taskBuilder`, `SimpleTaskHelper`, `TaskHelper`, `TaskHelperConstructor`
 
 ### `new RoundRobinScheduler({ quota, delay })`
 
-| Option  | Meaning                                                                                                                                          |
-| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Option | Meaning |
+|---|---|
 | `quota` | Milliseconds the thread may be held per tick, **for all tasks combined**. This is the maximum delay you impose on everything else in the thread. |
-| `delay` | Milliseconds to sleep between ticks. Controls the CPU share, not responsiveness.                                                                 |
+| `delay` | Milliseconds to sleep between ticks. Controls the CPU share, not responsiveness. |
 
-| Member               | Description                                                                                |
-| -------------------- | ------------------------------------------------------------------------------------------ |
-| `quota`, `delay`     | Read-only getters                                                                          |
-| `isRunning()`        | Whether the loop is currently turning                                                      |
+| Member | Description |
+|---|---|
+| `quota`, `delay` | Read-only getters |
+| `isRunning()` | Whether the loop is currently turning |
 | `push(job, handler)` | Register an iterator; `handler` is called with every step result. Returns the queue length |
-| `run()`              | Start the loop. Idempotent, `push` calls it for you                                        |
-| `clear()`            | Cancel everything: close generators, settle promises, cancel the pending timer             |
+| `run()` | Start the loop. Idempotent, `push` calls it for you |
+| `clear()` | Cancel everything: close generators, settle promises, cancel the pending timer |
 
 ### `taskBuilder(scheduler)(Helper)(generator)`
 
@@ -249,14 +249,14 @@ Returns a function that takes your generator's arguments minus the leading helpe
 
 ### `EventablePromise`
 
-| Member                          | Description                                                   |
-| ------------------------------- | ------------------------------------------------------------- |
-| `await`                         | The generator's `return` value                                |
-| `.on("data", h)`                | Every step, as `{ done, value }`. Returns itself for chaining |
-| `.on("error", h)`               | `{ done: true, error, value: undefined }`. Returns itself     |
-| `.off(event?, handler?)`        | Drop one handler, all handlers of one event, or everything    |
-| `for await`                     | Yields intermediate values; ends on the final step            |
-| `.then` / `.catch` / `.finally` | Standard behaviour, and the result stays eventable            |
+| Member | Description |
+|---|---|
+| `await` | The generator's `return` value |
+| `.on("data", h)` | Every step, as `{ done, value }`. Returns itself for chaining |
+| `.on("error", h)` | `{ done: true, error, value: undefined }`. Returns itself |
+| `.off(event?, handler?)` | Drop one handler, all handlers of one event, or everything |
+| `for await` | Yields intermediate values; ends on the final step |
+| `.then` / `.catch` / `.finally` | Standard behaviour, and the result stays eventable |
 
 ### `TaskHelper`
 
@@ -272,22 +272,22 @@ interface TaskHelper {
 
 The two knobs do different jobs and are easy to confuse.
 
-| Knob    | Governs                     | Turn it for    |
-| ------- | --------------------------- | -------------- |
+| Knob | Governs | Turn it for |
+|---|---|---|
 | `quota` | Longest uninterrupted block | Responsiveness |
-| `delay` | Share of CPU given away     | Throughput     |
+| `delay` | Share of CPU given away | Throughput |
 
-Real block length is about `quota × 1.25`, because the budget is checked _after_ a step completes, so the last step always overshoots. The task's CPU share is roughly `quota / (quota + delay)`.
+Real block length is about `quota × 1.25`, because the budget is checked *after* a step completes, so the last step always overshoots. The task's CPU share is roughly `quota / (quota + delay)`.
 
-| quota | delay | Block      | CPU     | Use                                 |
-| ----- | ----- | ---------- | ------- | ----------------------------------- |
-| 300   | 50    | ~375 ms    | 86%     | Never. This is the "before" picture |
-| 16    | 8     | ~20 ms     | 67%     | Frame boundary, slight jitter       |
-| **8** | **4** | **~10 ms** | **67%** | Good default, fits inside a frame   |
-| 5     | 0     | ~6 ms      | ~85%    | What you would ship                 |
-| 4     | 2     | ~5 ms      | 67%     | React Fiber's budget, smoothest     |
+| quota | delay | Block | CPU | Use |
+|---|---|---|---|---|
+| 300 | 50 | ~375 ms | 86% | Never. This is the "before" picture |
+| 16 | 8 | ~20 ms | 67% | Frame boundary, slight jitter |
+| **8** | **4** | **~10 ms** | **67%** | Good default, fits inside a frame |
+| 5 | 0 | ~6 ms | ~85% | What you would ship |
+| 4 | 2 | ~5 ms | 67% | React Fiber's budget, smoothest |
 
-`delay: 0` is not a typo. Node clamps it to about 1 ms, which is enough for timers and I/O to run. The point is to _hand over_ control, not to idle. Going below `quota: 4` is not worth it: `setTimeout` clamping (1 ms in Node, 4 ms for nested timers in browsers) starts eating a visible share of the tick.
+`delay: 0` is not a typo. Node clamps it to about 1 ms, which is enough for timers and I/O to run. The point is to *hand over* control, not to idle. Going below `quota: 4` is not worth it: `setTimeout` clamping (1 ms in Node, 4 ms for nested timers in browsers) starts eating a visible share of the tick.
 
 Reference numbers: 16.6 ms is one frame at 60 FPS, 50 ms is the Core Web Vitals "long task" threshold, 5 ms is roughly React Fiber's slice.
 
@@ -326,13 +326,10 @@ Microtasks drain completely before the event loop moves on, ahead of rendering a
 
 ```js
 // Never yields. The page stays dead.
-const loop = () => {
-  work();
-  queueMicrotask(loop);
-};
+const loop = () => { work(); queueMicrotask(loop); };
 ```
 
-The library uses `queueMicrotask` exactly once, to defer the _start_ of the loop so that the caller can attach handlers and begin iterating before the first data arrives. The real yield is always `setTimeout`.
+The library uses `queueMicrotask` exactly once, to defer the *start* of the loop so that the caller can attach handlers and begin iterating before the first data arrives. The real yield is always `setTimeout`.
 
 A production version would make the exit point a strategy and pick `MessageChannel` (a macrotask with no clamping), `setImmediate` (Node, runs after I/O), or `scheduler.yield()` (modern Chrome) per platform.
 
@@ -355,7 +352,7 @@ Three consequences worth knowing:
 
 `scheduler.clear()` does four things, and all four matter:
 
-1. **Cancels the pending `setTimeout`.** Otherwise a `push()` arriving between `clear()` and the timer firing flips `#running` back to `true`, and the old timer starts a _second_ loop over the same queue.
+1. **Cancels the pending `setTimeout`.** Otherwise a `push()` arriving between `clear()` and the timer firing flips `#running` back to `true`, and the old timer starts a *second* loop over the same queue.
 2. **Bumps an epoch counter.** A queued `queueMicrotask` cannot be cancelled, so each loop captures the epoch at start and dies quietly when it no longer matches. Same race, different scheduling primitive.
 3. **Closes generators via `job.return()`.** This is what makes `finally` blocks inside user generators run, so resources get released.
 4. **Settles every live task's promise** with `TaskCancelledError`. Without it those promises hang forever.
@@ -374,13 +371,13 @@ The library also attaches a silent `promise.catch(() => {})` internally. Without
 
 ## Demos
 
-| Command                    | What to watch                                                           |
-| -------------------------- | ----------------------------------------------------------------------- |
-| `npm run demo:problem`     | Heartbeat goes silent for seconds                                       |
-| `npm run demo:cooperative` | Heartbeat holds ~10–20 ms; all three interfaces                         |
-| `npm run demo:parallel`    | A/B interleaving; adding tasks does not lengthen the stall              |
-| `npm run demo:cancel`      | The `finally` line prints, the error carries a stack, the process exits |
-| `npm run demo:error`       | Both error paths; the process survives an uncaught-by-promise failure   |
+| Command | What to watch |
+|---|---|
+| `npm run demo:problem` | Heartbeat goes silent for seconds |
+| `npm run demo:cooperative` | Heartbeat holds ~10–20 ms; all three interfaces |
+| `npm run demo:parallel` | A/B interleaving; adding tasks does not lengthen the stall |
+| `npm run demo:cancel` | The `finally` line prints, the error carries a stack, the process exits |
+| `npm run demo:error` | Both error paths; the process survives an uncaught-by-promise failure |
 
 Two things in the output are worth understanding.
 
@@ -424,7 +421,7 @@ Deliberate, and left visible. This is a study repository.
 
 **Combine them.** The strongest setup is a worker that is itself written cooperatively, so it stays responsive to messages and can round-robin several jobs. This library runs unchanged inside a worker.
 
-For large JSON specifically, cooperative scheduling helps little: `JSON.parse` is atomic and cannot be paused. Use a streaming parser (`stream-json`, `clarinet`, `oboe`) or parse in a worker. Cooperative scheduling is for _processing_ the parsed data.
+For large JSON specifically, cooperative scheduling helps little: `JSON.parse` is atomic and cannot be paused. Use a streaming parser (`stream-json`, `clarinet`, `oboe`) or parse in a worker. Cooperative scheduling is for *processing* the parsed data.
 
 ## License
 
